@@ -71,6 +71,13 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
 .bill-summary-row.bold{font-weight:bold;font-size:16px;color:#bf360c}
 .words-box{margin-top:8px;padding:8px;background:#fff3e0;border-radius:6px;border:1px dashed #ffb74d;font-size:13px;font-weight:bold;color:#bf360c;text-transform:capitalize}
 
+.bill-footer-desc{margin-top:15px;padding-top:10px;border-top:1px solid #ffcc80;font-size:12px;color:#555}
+.bill-footer-bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:25px;padding-top:10px}
+.computer-generated{font-size:11px;color:#666;font-style:italic}
+.signature-box{text-align:center;width:180px}
+.signature-line{border-top:1px dashed #000;margin-bottom:4px}
+.signature-text{font-size:12px;font-weight:bold;color:#333}
+
 /* Jai Shree Ram Header Styling */
 .jai-shree-ram{
   font-family: 'Yatra One', cursive;
@@ -86,9 +93,8 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
   .row{grid-template-columns:1fr 1fr auto;gap:8px}
   .search-wrapper{grid-column:span 3}
   header{padding:15px}.section{padding:13px}
+  .bill-footer-bottom{flex-direction:column;align-items:center;gap:15px;text-align:center}
 }
-
-.bill-footer-desc{margin-top:20px;padding-top:10px;border-top:1px solid #ffcc80;font-size:12px;color:#555;text-align:center}
 
 @media print{
   body{background:#fff;color:#000;font-family:'Poppins',sans-serif;font-size:13px;margin:0;padding:10px}
@@ -104,6 +110,8 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
   .bill th{background:#fff!important;color:#000!important}
   .total{font-size:18px;text-align:right;margin-top:15px;border-top:2px solid #000;padding-top:8px}
   .words-box{background:none;border:1px solid #000;color:#000;margin-top:10px}
+  .bill-footer-desc{border-top:1px solid #aaa}
+  .bill-footer-bottom{margin-top:35px}
   @page{size:A4 portrait;margin:12mm}
 }
 
@@ -230,8 +238,19 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
       </div>
 
       <div class="bill-footer-desc">
-        <p><b>Terms & Conditions:</b> Goods once sold will not be taken back without valid bill. Please check your items before leaving.</p>
-        <p><b>Thank You For Shopping With SHREE RAM PROVISION STORE! Visit Again!</b></p>
+        <p style="margin:2px 0;"><b>Terms & Conditions:</b> Goods once sold will not be taken back without valid bill. Please check your items before leaving.</p>
+        <p style="margin:2px 0;text-align:center;"><b>Thank You For Shopping With SHREE RAM PROVISION STORE! Visit Again!</b></p>
+        
+        <div class="bill-footer-bottom">
+          <div class="computer-generated">
+            This is a computer generated invoice.
+          </div>
+          <div class="signature-box">
+            <div style="font-weight:bold;font-size:12px;margin-bottom:25px;">For SHREE RAM PROVISION STORE</div>
+            <div class="signature-line"></div>
+            <div class="signature-text">Authorised Signatory</div>
+          </div>
+        </div>
       </div>
 
       <div class="actions no-print">
@@ -457,7 +476,6 @@ function removeItem(index){
   render();
 }
 
-// Convert Amount Number into Words
 function numberToWords(num) {
   const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
   const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
@@ -520,7 +538,6 @@ function render(){
   document.getElementById('total').textContent = grandTotal.toFixed(2);
   document.getElementById('billNo').textContent = currentBill.billNo;
 
-  // Print Summary Updates
   document.getElementById('printSubtotal').textContent = subtotal.toFixed(2);
   document.getElementById('printDiscount').textContent = discountVal.toFixed(2);
   document.getElementById('printGstRate').textContent = currentBill.gst;
@@ -559,7 +576,6 @@ function settleAndPrint(){
     settledAt: new Date().toISOString()
   };
 
-  // Replace bill if editing, else add new
   const existingIdx = settledBills.findIndex(b => b.billNo === currentBill.billNo);
   if(existingIdx >= 0) {
     settledBills[existingIdx] = record;
@@ -759,7 +775,6 @@ function renderReports() {
   document.getElementById('rCard').textContent = card.toFixed(2);
 }
 
-// Edit existing settled bill
 function editSettledBill(index) {
   const billToEdit = settledBills[index];
   currentBill = JSON.parse(JSON.stringify(billToEdit));
