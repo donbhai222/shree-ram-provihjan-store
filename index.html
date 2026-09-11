@@ -69,6 +69,7 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
 .bill-summary-box{margin-top:15px;border-top:2px solid #e65100;padding-top:10px}
 .bill-summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
 .bill-summary-row.bold{font-weight:bold;font-size:16px;color:#bf360c}
+.words-box{margin-top:8px;padding:8px;background:#fff3e0;border-radius:6px;border:1px dashed #ffb74d;font-size:13px;font-weight:bold;color:#bf360c;text-transform:capitalize}
 
 /* Jai Shree Ram Header Styling */
 .jai-shree-ram{
@@ -102,6 +103,7 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
   .bill th, .bill td{padding:8px;font-size:13px;border-bottom:1px solid #aaa}
   .bill th{background:#fff!important;color:#000!important}
   .total{font-size:18px;text-align:right;margin-top:15px;border-top:2px solid #000;padding-top:8px}
+  .words-box{background:none;border:1px solid #000;color:#000;margin-top:10px}
   @page{size:A4 portrait;margin:12mm}
 }
 
@@ -224,6 +226,7 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
         <div class="bill-summary-row"><span>Discount:</span><span>- ₹ <span id="printDiscount">0.00</span></span></div>
         <div class="bill-summary-row"><span>GST (<span id="printGstRate">0</span>%):</span><span>+ ₹ <span id="printGstValue">0.00</span></span></div>
         <div class="bill-summary-row bold"><span>Grand Total:</span><span>₹ <span id="total">0.00</span></span></div>
+        <div class="words-box"><b>Amount In Words:</b> <span id="totalInWords">Zero Rupees Only</span></div>
       </div>
 
       <div class="bill-footer-desc">
@@ -310,7 +313,7 @@ footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14
     </div>
     <h3 style="color:#bf360c;">Bill History</h3>
     <table class="bill">
-      <thead><tr><th>Bill No</th><th>Customer Name</th><th>Mobile</th><th>Payment</th><th>Total</th></tr></thead>
+      <thead><tr><th>Bill No</th><th>Customer Name</th><th>Mobile</th><th>Payment</th><th>Total</th><th class="no-print">Action</th></tr></thead>
       <tbody id="reportRows"></tbody>
     </table>
   </div>
@@ -454,6 +457,30 @@ function removeItem(index){
   render();
 }
 
+// Convert Amount Number into Words
+function numberToWords(num) {
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  num = Math.round(num);
+  if (num === 0) return 'Zero Rupees Only';
+
+  function inWords(n) {
+    if ((n = n.toString()).length > 9) return 'Overflow';
+    let n_array = ('000000000' + n).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n_array) return '';
+    let str = '';
+    str += (n_array[1] != 0) ? (a[Number(n_array[1])] || b[n_array[1][0]] + ' ' + a[n_array[1][1]]) + 'Crore ' : '';
+    str += (n_array[2] != 0) ? (a[Number(n_array[2])] || b[n_array[2][0]] + ' ' + a[n_array[2][1]]) + 'Lakh ' : '';
+    str += (n_array[3] != 0) ? (a[Number(n_array[3])] || b[n_array[3][0]] + ' ' + a[n_array[3][1]]) + 'Thousand ' : '';
+    str += (n_array[4] != 0) ? (a[Number(n_array[4])] || b[n_array[4][0]] + ' ' + a[n_array[4][1]]) + 'Hundred ' : '';
+    str += (n_array[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n_array[5])] || b[n_array[5][0]] + ' ' + a[n_array[5][1]]) : '';
+    return str;
+  }
+
+  return inWords(num).trim() + ' Rupees Only';
+}
+
 function render(){
   currentBill.payment = document.getElementById('payment').value;
   currentBill.discount = Number(document.getElementById('discount').value || 0);
@@ -498,6 +525,7 @@ function render(){
   document.getElementById('printDiscount').textContent = discountVal.toFixed(2);
   document.getElementById('printGstRate').textContent = currentBill.gst;
   document.getElementById('printGstValue').textContent = gstVal.toFixed(2);
+  document.getElementById('totalInWords').textContent = numberToWords(grandTotal);
 
   updateCustomerInfo();
 }
@@ -531,7 +559,14 @@ function settleAndPrint(){
     settledAt: new Date().toISOString()
   };
 
-  settledBills.push(record);
+  // Replace bill if editing, else add new
+  const existingIdx = settledBills.findIndex(b => b.billNo === currentBill.billNo);
+  if(existingIdx >= 0) {
+    settledBills[existingIdx] = record;
+  } else {
+    settledBills.push(record);
+  }
+
   localStorage.setItem('shreeRamSettledBills', JSON.stringify(settledBills));
 
   window.print();
@@ -699,7 +734,7 @@ function renderReports() {
   const tbody = document.getElementById('reportRows');
   tbody.innerHTML = '';
 
-  settledBills.forEach((b) => {
+  settledBills.forEach((b, index) => {
     totalSales += b.finalTotal;
     if (b.payment === 'Cash') cash += b.finalTotal;
     if (b.payment === 'UPI') upi += b.finalTotal;
@@ -712,6 +747,7 @@ function renderReports() {
       <td>${escapeHtml(b.mobile || '-')}</td>
       <td>${b.payment}</td>
       <td>₹ ${b.finalTotal.toFixed(2)}</td>
+      <td class="no-print"><button class="btn-sm btn-edit" onclick="editSettledBill(${index})">✏️ Edit</button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -721,6 +757,25 @@ function renderReports() {
   document.getElementById('rCash').textContent = cash.toFixed(2);
   document.getElementById('rUpi').textContent = upi.toFixed(2);
   document.getElementById('rCard').textContent = card.toFixed(2);
+}
+
+// Edit existing settled bill
+function editSettledBill(index) {
+  const billToEdit = settledBills[index];
+  currentBill = JSON.parse(JSON.stringify(billToEdit));
+
+  document.getElementById('guest').value = currentBill.guest || '';
+  document.getElementById('guestMobile').value = currentBill.mobile || '';
+  document.getElementById('guestAddress').value = currentBill.address || '';
+  document.getElementById('discount').value = currentBill.discount || 0;
+  document.getElementById('discountType').value = currentBill.discountType || 'amount';
+  document.getElementById('discountGst').value = currentBill.gst || 0;
+  document.getElementById('payment').value = currentBill.payment || 'Cash';
+  document.getElementById('printBillNo').textContent = currentBill.billNo;
+
+  hideReports();
+  render();
+  alert(`Bill ${currentBill.billNo} billing screen par edit ke liye load ho gaya hai.`);
 }
 
 function resetAllData() {
