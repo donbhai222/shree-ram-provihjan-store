@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHREE RAM PROVISION STORE - Billing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Yatra+One&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Poppins',sans-serif;background:#fff8f0;color:#222;display:flex;flex-direction:column;min-height:100vh}
+header{background:linear-gradient(135deg, #d32f2f, #e65100);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 12px rgba(211,47,47,0.3);position:relative}
+header h1{margin:0;font-size:24px;font-family:'Cinzel',serif;letter-spacing:1px} header span{font-size:13px;opacity:.9}
+
+.menu-btn{background:transparent;border:none;color:#fff;font-size:26px;cursor:pointer;padding:0 10px;margin-right:10px;display:flex;align-items:center}
+.sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:#4a148c;box-shadow:4px 0 15px rgba(0,0,0,0.3);z-index:10001;transition:left 0.3s ease;padding:20px 15px;display:flex;flex-direction:column}
+.sidebar.active{left:0}
+.sidebar-header{display:flex;justify-content:space-between;align-items:center;color:#fff;border-bottom:1px solid #7b1fa2;padding-bottom:15px;margin-bottom:20px}
+.sidebar-header h3{margin:0;font-size:20px}
+.close-sidebar{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
+.sidebar-menu{display:flex;flex-direction:column;gap:12px}
+.sidebar-menu button{width:100%;text-align:left;border:0;border-radius:8px;padding:12px 16px;cursor:pointer;font-weight:bold;font-size:15px;transition:all 0.2s ease;box-shadow:0 2px 5px rgba(0,0,0,0.12)}
+.sidebar-menu button:hover{transform:translateX(5px);opacity:0.95}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:none}
+.overlay.active{display:block}
+
+.container{max-width:1200px;margin:20px auto;padding:0 16px;flex:1}
+h2{margin:10px 0 14px;color:#bf360c;font-family:'Cinzel',serif}.section{background:white;border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 4px 15px rgba(230,81,0,0.08);border:1px solid #ffe0b2}
+.hidden{display:none}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+input,select,button{font:inherit}input,select{width:100%;padding:10px;border:1px solid #ffcc80;border-radius:8px;background:#fffde7}
+
+.row{display:grid;grid-template-columns:2fr 0.8fr 0.9fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center}
+.search-wrapper{position:relative;width:100%;grid-column:span 5}
+.search-results{position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #e65100;border-radius:8px;max-height:180px;overflow-y:auto;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:none}
+.search-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #eee;display:flex;justify-content:space-between;font-size:14px}
+.search-item:last-child{border-bottom:none}
+.search-item:hover, .search-item.selected{background:#fff3e0;color:#d32f2f;font-weight:bold}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.actions button, .btn-action{border:0;border-radius:8px;padding:11px 16px;cursor:pointer;font-weight:bold;transition:all 0.2s ease;box-shadow:0 2px 5px rgba(0,0,0,0.12)}
+.actions button:hover, .btn-action:hover{transform:scale(1.02);opacity:0.95}
+
+.btn-report{background:linear-gradient(135deg, #1976d2, #0d47a1);color:#fff}
+.btn-closing{background:linear-gradient(135deg, #388e3c, #1b5e20);color:#fff}
+.btn-item-master{background:linear-gradient(135deg, #8e24aa, #4a148c);color:#fff}
+.btn-reset{background:linear-gradient(135deg, #f57c00, #e65100);color:#fff}
+
+.primary{background:linear-gradient(135deg, #e65100, #bf360c);color:#fff}
+.gray{background:linear-gradient(135deg, #78909c, #455a64);color:#fff}
+.add{background:linear-gradient(135deg, #d32f2f, #b71c1c);color:white;border:0;border-radius:8px;padding:10px 16px;cursor:pointer;font-weight:bold}
+
+.bill{border-collapse:collapse;width:100%;margin-top:12px}.bill th,.bill td{border-bottom:1px solid #ffe0b2;padding:9px;text-align:left}
+.bill th{background:#fff3e0;color:#bf360c;font-family:'Cinzel',serif}
+.total{text-align:right;font-size:22px;font-weight:bold;margin-top:15px;color:#bf360c}
+.back{margin-bottom:12px}
+
+.item-manage-list{margin-top:15px;max-height:250px;overflow-y:auto;border:1px solid #ffe0b2;border-radius:8px;padding:8px;background:#fffde7}
+.item-manage-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #ffe0b2;background:#fff;margin-bottom:4px;border-radius:6px}
+.item-manage-row:last-child{border-bottom:none;margin-bottom:0}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:none;cursor:pointer;margin-left:4px;font-weight:bold;color:#fff}
+.btn-edit{background:#0288d1}
+.btn-del{background:#d32f2f}
+
+footer{background:#3e2723;color:#fff;text-align:center;padding:12px;font-size:14px;font-weight:bold;letter-spacing:0.5px}
+
+.bill-summary-box{margin-top:15px;border-top:2px solid #e65100;padding-top:10px}
+.bill-summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.bill-summary-row.bold{font-weight:bold;font-size:16px;color:#bf360c}
+
+/* Jai Shree Ram Header Styling */
+.jai-shree-ram{
+  font-family: 'Yatra One', cursive;
+  font-size: 26px;
+  color: #d32f2f;
+  text-shadow: 1px 1px 2px rgba(255, 152, 0, 0.4);
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+}
+
+@media(max-width:750px){
+  .grid{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr 1fr auto;gap:8px}
+  .search-wrapper{grid-column:span 3}
+  header{padding:15px}.section{padding:13px}
+}
+
+.bill-footer-desc{margin-top:20px;padding-top:10px;border-top:1px solid #ffcc80;font-size:12px;color:#555;text-align:center}
+
+@media print{
+  body{background:#fff;color:#000;font-family:'Poppins',sans-serif;font-size:13px;margin:0;padding:10px}
+  header,.back,.no-print,#cloudSetup,#cloudStatus,button,footer,.sidebar,.overlay,#loginModal{display:none!important}
+  .container{max-width:100%;margin:0;padding:0}
+  .section{box-shadow:none;padding:0;margin:0;border-radius:0;border:none}
+  .grid{display:block}
+  .print-head{border-bottom:2px solid #d32f2f;padding-bottom:8px;margin-bottom:15px;text-align:center}
+  .jai-shree-ram{font-size:28px;color:#d32f2f!important}
+  .print-head h2{font-size:24px;color:#801313;margin:0;font-weight:bold;font-family:'Cinzel',serif}
+  .print-meta{font-size:13px;margin-top:8px;display:flex;justify-content:space-between;border-top:1px solid #aaa;padding-top:6px}
+  .bill th, .bill td{padding:8px;font-size:13px;border-bottom:1px solid #aaa}
+  .bill th{background:#fff!important;color:#000!important}
+  .total{font-size:18px;text-align:right;margin-top:15px;border-top:2px solid #000;padding-top:8px}
+  @page{size:A4 portrait;margin:12mm}
+}
+
+.charge-row{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center}
+
+.print-head{text-align:center;border-bottom:2px solid #e65100;padding-bottom:10px;margin-bottom:12px}
+.print-head h2{margin:0;color:#bf360c;font-size:22px;font-family:'Cinzel',serif}.print-head>div{margin-top:2px}
+.print-meta{display:flex;justify-content:space-between;font-size:12px;margin-top:10px}
+@media screen{.print-head{background:#fff3e0;padding:14px;border-radius:10px;border:1px solid #ffe0b2}}
+
+.report-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:15px 0}
+.report-cards>div{background:#fff3e0;border:1px solid #ffe0b2;border-radius:10px;padding:14px;text-align:center}
+.report-cards span{display:block;color:#666;font-size:12px;margin-bottom:6px}.report-cards b{font-size:20px;color:#bf360c}
+@media(max-width:750px){.report-cards{grid-template-columns:repeat(2,1fr)}}
+
+#loginModal{position:fixed;inset:0;background:rgba(74,20,140,0.88);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:20000}
+#loginModal.hidden{display:none}
+.login-box{background:#fff;width:min(400px,90vw);border-radius:16px;padding:30px;box-shadow:0 15px 35px rgba(0,0,0,0.3);text-align:center;border:2px solid #ffe0b2}
+.login-box h2{color:#bf360c;margin-top:0;margin-bottom:8px;font-family:'Cinzel',serif}
+.login-box p{color:#666;font-size:13px;margin-bottom:20px}
+.login-box label{display:block;text-align:left;font-weight:bold;font-size:13px;margin-bottom:6px;color:#333}
+.login-box input{margin-bottom:16px}
+.login-error{color:#d32f2f;font-size:13px;margin-bottom:12px;min-height:18px;font-weight:bold}
+</style>
+</head>
+<body>
+
+<!-- Login Panel Modal -->
+<div id="loginModal">
+  <div class="login-box">
+    <div class="jai-shree-ram">॥ जय श्री राम ॥</div>
+    <h2>SHREE RAM PROVISION STORE</h2>
+    <p>Grocery & General Store Billing System</p>
+    <label>Username</label>
+    <input id="loginUser" placeholder="Enter Username" autocomplete="off">
+    <label>Password</label>
+    <input id="loginPass" type="password" placeholder="Enter Password" onkeydown="handleLoginKey(event)">
+    <div id="loginError" class="login-error"></div>
+    <button class="primary" style="width:100%;padding:12px;font-size:16px;border-radius:8px" onclick="checkLogin()">Login System</button>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <h3>Menu Options</h3>
+    <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+  </div>
+  <div class="sidebar-menu">
+    <button class="btn-report" onclick="showReports(); toggleSidebar();">📊 Daily Report</button>
+    <button class="btn-item-master" onclick="showItemMaster(); toggleSidebar();">🛒 Item Master</button>
+    <button class="btn-reset" onclick="resetAllData(); toggleSidebar();">↺ Reset Demo Data</button>
+  </div>
+</div>
+
+<header>
+  <div style="display:flex;align-items:center;">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <h1>SHREE RAM PROVISION STORE</h1>
+  </div>
+  <span>Quality Grocery & Daily Needs</span>
+</header>
+
+<div class="container">
+
+<!-- Direct Billing Section -->
+<div id="billing">
+  <div class="grid">
+    <div class="section">
+      <div class="print-head">
+        <div class="jai-shree-ram">॥ जय श्री राम ॥</div>
+        <h2>SHREE RAM PROVISION STORE</h2>
+        <div style="font-size:13px;font-weight:600;color:#444;">GROCERY, SPICES & DAILY ESSENTIALS</div>
+        <div class="print-meta">
+          <span>Bill No: <b id="printBillNo">-</b></span>
+          <span>Date: <b id="printDate">-</b> | Time: <b id="printTime">-</b></span>
+        </div>
+        <div id="printCustomerMeta" style="text-align:left;margin-top:8px;font-size:13px;border-top:1px dashed #ffcc80;padding-top:6px;"></div>
+      </div>
+      
+      <div class="row no-print">
+        <div class="search-wrapper">
+          <input id="item" placeholder="🔍 Search & Add Grocery Item..." oninput="searchItems()" onfocus="searchItems()" onkeydown="handleSearchKey(event)" autocomplete="off">
+          <div id="searchResults" class="search-results"></div>
+        </div>
+        <input id="qty" type="number" min="0.01" step="any" value="1" placeholder="Qty">
+        <select id="unit">
+          <option value="KG">KG</option>
+          <option value="LTR">LTR</option>
+          <option value="PKT">PKT</option>
+          <option value="BOTTLE">BOTTLE</option>
+          <option value="CAN">CAN</option>
+          <option value="TIN">TIN</option>
+          <option value="GM">GM</option>
+          <option value="ML">ML</option>
+          <option value="PCS">PCS</option>
+        </select>
+        <input id="rate" type="number" min="0" value="0" placeholder="Rate" readonly>
+        <button class="add" onclick="addItem()">+ Add Item</button>
+      </div>
+
+      <table class="bill">
+        <thead>
+          <tr>
+            <th>Item Description</th>
+            <th>Qty</th>
+            <th>Unit</th>
+            <th>Rate</th>
+            <th>Amount</th>
+            <th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="items"></tbody>
+      </table>
+
+      <!-- Bill Breakdown & Summary -->
+      <div class="bill-summary-box">
+        <div class="bill-summary-row"><span>Subtotal:</span><span>₹ <span id="printSubtotal">0.00</span></span></div>
+        <div class="bill-summary-row"><span>Discount:</span><span>- ₹ <span id="printDiscount">0.00</span></span></div>
+        <div class="bill-summary-row"><span>GST (<span id="printGstRate">0</span>%):</span><span>+ ₹ <span id="printGstValue">0.00</span></span></div>
+        <div class="bill-summary-row bold"><span>Grand Total:</span><span>₹ <span id="total">0.00</span></span></div>
+      </div>
+
+      <div class="bill-footer-desc">
+        <p><b>Terms & Conditions:</b> Goods once sold will not be taken back without valid bill. Please check your items before leaving.</p>
+        <p><b>Thank You For Shopping With SHREE RAM PROVISION STORE! Visit Again!</b></p>
+      </div>
+
+      <div class="actions no-print">
+        <button class="primary" onclick="settleAndPrint()">🖨 Settle & Print Bill</button>
+        <button class="btn-reset" style="padding:11px 16px" onclick="clearCurrentBill()">Clear Current Bill</button>
+      </div>
+    </div>
+
+    <!-- Customer Input Panel -->
+    <div class="section no-print">
+      <h2>Buyer & Payment Info</h2>
+      <label>Customer Name</label>
+      <input id="guest" placeholder="Name" oninput="updateCustomerInfo()">
+      <br><br>
+      <label>Customer Mobile No.</label>
+      <input id="guestMobile" placeholder="Mobile No." oninput="updateCustomerInfo()">
+      <br><br>
+      <label>Customer Address</label>
+      <input id="guestAddress" placeholder="Address" oninput="updateCustomerInfo()">
+      <br><br>
+      <label>Payment Mode</label>
+      <select id="payment"><option>Cash</option><option>UPI</option><option>Card</option></select>
+      <br><br>
+      <label>Discount</label>
+      <div class="charge-row">
+        <input id="discount" type="number" min="0" value="0" oninput="render()">
+        <select id="discountType" onchange="render()"><option value="amount">₹ Amount</option><option value="percent">% Percent</option></select>
+      </div>
+      <br>
+      <label>GST</label>
+      <div class="charge-row"><input id="discountGst" type="number" min="0" value="0" oninput="render()"><span>%</span></div>
+      <br>
+      <p><b>Subtotal:</b> ₹ <span id="subtotal">0.00</span></p>
+      <p><b>Discount:</b> ₹ <span id="discountValue">0.00</span></p>
+      <p><b>GST:</b> ₹ <span id="gstValue">0.00</span></p>
+      <p><b>Bill No:</b> <span id="billNo">-</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- Item Master View -->
+<div id="itemMasterView" class="hidden">
+  <div class="section">
+    <button class="back gray no-print" onclick="hideItemMaster()">← Back to Billing</button>
+    <h2>🛒 Item Master (Grocery Menu Management)</h2>
+    <input type="hidden" id="editingItemIndex" value="-1">
+    <div class="row no-print" style="grid-template-columns:1.5fr 1fr 1fr auto">
+      <input id="newItemName" placeholder="Item Name (e.g. Sugar)">
+      <select id="newItemUnit">
+        <option value="KG">KG</option>
+        <option value="LTR">LTR</option>
+        <option value="PKT">PKT</option>
+        <option value="BOTTLE">BOTTLE</option>
+        <option value="CAN">CAN</option>
+        <option value="TIN">TIN</option>
+        <option value="GM">GM</option>
+        <option value="ML">ML</option>
+        <option value="PCS">PCS</option>
+      </select>
+      <input id="newItemRate" type="number" min="0" placeholder="Rate (₹)">
+      <button id="saveItemBtn" class="add" onclick="addMenuItem()">+ Add Item</button>
+    </div>
+    <h3 style="margin-top:20px;color:#bf360c;">📋 Existing Items List</h3>
+    <div id="menuManageList" class="item-manage-list"></div>
+  </div>
+</div>
+
+<!-- Reports View -->
+<div id="reports" class="hidden">
+  <div class="section">
+    <button class="back gray no-print" onclick="hideReports()">← Back to Billing</button>
+    <h2>📊 Daily Sales Report</h2>
+    <div class="report-cards">
+      <div><span>Total Bills</span><b id="rBills">0</b></div>
+      <div><span>Total Sales</span><b>₹ <span id="rSales">0.00</span></b></div>
+      <div><span>Cash</span><b>₹ <span id="rCash">0.00</span></b></div>
+      <div><span>UPI</span><b>₹ <span id="rUpi">0.00</span></b></div>
+      <div><span>Card</span><b>₹ <span id="rCard">0.00</span></b></div>
+    </div>
+    <h3 style="color:#bf360c;">Bill History</h3>
+    <table class="bill">
+      <thead><tr><th>Bill No</th><th>Customer Name</th><th>Mobile</th><th>Payment</th><th>Total</th></tr></thead>
+      <tbody id="reportRows"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<footer class="no-print">
+  SHREE RAM PROVISION STORE — Smart Billing Software
+</footer>
+
+<script>
+let settledBills = JSON.parse(localStorage.getItem('shreeRamSettledBills') || '[]');
+let menu = JSON.parse(localStorage.getItem('shreeRamMenu') || 'null') || [
+  {name:'Sugar', unit:'KG', rate:45},
+  {name:'Mustard Oil', unit:'LTR', rate:160},
+  {name:'Fortune Atta', unit:'PKT', rate:230},
+  {name:'Toor Dal', unit:'KG', rate:140},
+  {name:'Tata Salt', unit:'PKT', rate:28},
+  {name:'Tea Powder', unit:'PKT', rate:120}
+];
+
+let currentBill = {
+  items: [],
+  discount: 0,
+  discountType: 'amount',
+  gst: 0,
+  payment: 'Cash',
+  guest: '',
+  mobile: '',
+  address: '',
+  billNo: ''
+};
+
+let selectedSearchIndex = -1;
+
+window.onload = function() {
+  initNewBill();
+};
+
+function initNewBill() {
+  currentBill = {
+    items: [],
+    discount: 0,
+    discountType: 'amount',
+    gst: 0,
+    payment: 'Cash',
+    guest: '',
+    mobile: '',
+    address: '',
+    billNo: 'SRP-' + (1000 + Math.floor(Math.random() * 9000))
+  };
+
+  document.getElementById('guest').value = '';
+  document.getElementById('guestMobile').value = '';
+  document.getElementById('guestAddress').value = '';
+  document.getElementById('discount').value = 0;
+  document.getElementById('discountGst').value = 0;
+  document.getElementById('payment').value = 'Cash';
+
+  const now = new Date();
+  document.getElementById('printBillNo').textContent = currentBill.billNo;
+  document.getElementById('printDate').textContent = now.toLocaleDateString();
+  document.getElementById('printTime').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+  render();
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function checkLogin(){
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginError');
+
+  if(user === 'shreeram' && pass === '1234'){
+    document.getElementById('loginModal').classList.add('hidden');
+  } else {
+    err.textContent = 'Invalid Username or Password!';
+  }
+}
+
+function handleLoginKey(e){
+  if(e.key === 'Enter') checkLogin();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('active');
+  document.getElementById('overlay').classList.toggle('active');
+}
+
+function updateCustomerInfo() {
+  currentBill.guest = document.getElementById('guest').value.trim();
+  currentBill.mobile = document.getElementById('guestMobile').value.trim();
+  currentBill.address = document.getElementById('guestAddress').value.trim();
+  
+  const metaDiv = document.getElementById('printCustomerMeta');
+  if (currentBill.guest || currentBill.mobile || currentBill.address) {
+    metaDiv.innerHTML = `
+      <b>Buyer Details:</b><br>
+      ${currentBill.guest ? 'Name: ' + escapeHtml(currentBill.guest) + '<br>' : ''}
+      ${currentBill.mobile ? 'Mobile: ' + escapeHtml(currentBill.mobile) + '<br>' : ''}
+      ${currentBill.address ? 'Address: ' + escapeHtml(currentBill.address) : ''}
+    `;
+  } else {
+    metaDiv.innerHTML = `<b>Customer:</b> Cash Customer`;
+  }
+}
+
+function addItem(){
+  const name = document.getElementById('item').value.trim();
+  const qty = Number(document.getElementById('qty').value);
+  const unit = document.getElementById('unit').value;
+  const rate = Number(document.getElementById('rate').value);
+
+  if(!name || qty <= 0 || rate < 0){
+    alert('Sahi item, quantity aur rate bharein.');
+    return;
+  }
+
+  const existing = currentBill.items.find(x => x.name.toLowerCase() === name.toLowerCase() && x.unit === unit);
+  if(existing){
+    existing.qty += qty;
+  } else {
+    currentBill.items.push({name, qty, unit, rate});
+  }
+
+  document.getElementById('item').value = '';
+  document.getElementById('qty').value = 1;
+  document.getElementById('rate').value = 0;
+
+  render();
+  document.getElementById('item').focus();
+}
+
+function removeItem(index){
+  currentBill.items.splice(index, 1);
+  render();
+}
+
+function render(){
+  currentBill.payment = document.getElementById('payment').value;
+  currentBill.discount = Number(document.getElementById('discount').value || 0);
+  currentBill.discountType = document.getElementById('discountType').value;
+  currentBill.gst = Number(document.getElementById('discountGst').value || 0);
+
+  const tbody = document.getElementById('items');
+  tbody.innerHTML = '';
+
+  let subtotal = 0;
+  currentBill.items.forEach((item, index) => {
+    const amt = item.qty * item.rate;
+    subtotal += amt;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(item.name)}</td>
+      <td>${item.qty}</td>
+      <td>${item.unit}</td>
+      <td>₹ ${item.rate}</td>
+      <td>₹ ${amt.toFixed(2)}</td>
+      <td class="no-print"><button class="btn-sm btn-del" onclick="removeItem(${index})">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  let d = currentBill.discount;
+  let discountVal = currentBill.discountType === 'percent' ? (subtotal * d / 100) : d;
+  discountVal = Math.min(Math.max(discountVal, 0), subtotal);
+
+  let afterDiscount = subtotal - discountVal;
+  let gstVal = (afterDiscount * currentBill.gst) / 100;
+  let grandTotal = afterDiscount + gstVal;
+
+  document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+  document.getElementById('discountValue').textContent = discountVal.toFixed(2);
+  document.getElementById('gstValue').textContent = gstVal.toFixed(2);
+  document.getElementById('total').textContent = grandTotal.toFixed(2);
+  document.getElementById('billNo').textContent = currentBill.billNo;
+
+  // Print Summary Updates
+  document.getElementById('printSubtotal').textContent = subtotal.toFixed(2);
+  document.getElementById('printDiscount').textContent = discountVal.toFixed(2);
+  document.getElementById('printGstRate').textContent = currentBill.gst;
+  document.getElementById('printGstValue').textContent = gstVal.toFixed(2);
+
+  updateCustomerInfo();
+}
+
+function clearCurrentBill(){
+  if(confirm('Kya aap is bill ke saare items hatana chahte hain?')){
+    initNewBill();
+  }
+}
+
+function settleAndPrint(){
+  if(currentBill.items.length === 0){
+    alert('Bill me items hona zaroori hai!');
+    return;
+  }
+
+  let subtotal = currentBill.items.reduce((s, x) => s + (x.qty * x.rate), 0);
+  let d = currentBill.discount;
+  let discountVal = currentBill.discountType === 'percent' ? (subtotal * d / 100) : d;
+  discountVal = Math.min(Math.max(discountVal, 0), subtotal);
+  let afterDiscount = subtotal - discountVal;
+  let gstVal = (afterDiscount * currentBill.gst) / 100;
+  let finalTotal = afterDiscount + gstVal;
+
+  const record = {
+    ...currentBill,
+    subtotal,
+    discountValue: discountVal,
+    gstValue: gstVal,
+    finalTotal,
+    settledAt: new Date().toISOString()
+  };
+
+  settledBills.push(record);
+  localStorage.setItem('shreeRamSettledBills', JSON.stringify(settledBills));
+
+  window.print();
+  alert(`Bill ${currentBill.billNo} successfully saved!`);
+  initNewBill();
+}
+
+function searchItems() {
+  const query = document.getElementById('item').value.toLowerCase().trim();
+  const resultsDiv = document.getElementById('searchResults');
+  resultsDiv.innerHTML = '';
+  selectedSearchIndex = -1;
+
+  if (!query) {
+    resultsDiv.style.display = 'none';
+    return;
+  }
+
+  const matches = menu.filter(x => x.name.toLowerCase().includes(query));
+  if (matches.length === 0) {
+    resultsDiv.style.display = 'none';
+    return;
+  }
+
+  matches.forEach((item) => {
+    const div = document.createElement('div');
+    div.className = 'search-item';
+    div.innerHTML = `<span>${escapeHtml(item.name)} (${item.unit || 'PKT'})</span><b>₹ ${item.rate}</b>`;
+    div.onclick = () => selectSearchResult(item);
+    resultsDiv.appendChild(div);
+  });
+
+  resultsDiv.style.display = 'block';
+}
+
+function selectSearchResult(item) {
+  document.getElementById('item').value = item.name;
+  document.getElementById('rate').value = item.rate;
+  if(item.unit) {
+    document.getElementById('unit').value = item.unit;
+  }
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('qty').focus();
+}
+
+function handleSearchKey(e) {
+  const resultsDiv = document.getElementById('searchResults');
+  const items = resultsDiv.getElementsByClassName('search-item');
+
+  if (e.key === 'ArrowDown') {
+    selectedSearchIndex = Math.min(selectedSearchIndex + 1, items.length - 1);
+    updateSearchHighlight(items);
+  } else if (e.key === 'ArrowUp') {
+    selectedSearchIndex = Math.max(selectedSearchIndex - 1, 0);
+    updateSearchHighlight(items);
+  } else if (e.key === 'Enter') {
+    if (selectedSearchIndex >= 0 && items[selectedSearchIndex]) {
+      items[selectedSearchIndex].click();
+    } else {
+      addItem();
+    }
+  }
+}
+
+function updateSearchHighlight(items) {
+  Array.from(items).forEach((item, idx) => {
+    item.classList.toggle('selected', idx === selectedSearchIndex);
+  });
+}
+
+function showItemMaster() {
+  document.getElementById('billing').classList.add('hidden');
+  document.getElementById('itemMasterView').classList.remove('hidden');
+  renderItemManageList();
+}
+
+function hideItemMaster() {
+  document.getElementById('itemMasterView').classList.add('hidden');
+  document.getElementById('billing').classList.remove('hidden');
+}
+
+function renderItemManageList() {
+  const container = document.getElementById('menuManageList');
+  container.innerHTML = '';
+
+  menu.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'item-manage-row';
+    row.innerHTML = `
+      <div><b>${escapeHtml(item.name)}</b> (${item.unit || 'PKT'}) - ₹ ${item.rate}</div>
+      <div>
+        <button class="btn-sm btn-edit" onclick="editMenuItem(${index})">Edit</button>
+        <button class="btn-sm btn-del" onclick="deleteMenuItem(${index})">Delete</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function addMenuItem() {
+  const nameInput = document.getElementById('newItemName');
+  const unitInput = document.getElementById('newItemUnit');
+  const rateInput = document.getElementById('newItemRate');
+  const editIdx = Number(document.getElementById('editingItemIndex').value);
+  
+  const name = nameInput.value.trim();
+  const unit = unitInput.value;
+  const rate = Number(rateInput.value);
+
+  if (!name || rate < 0) {
+    alert('Please enter valid item name and rate.');
+    return;
+  }
+
+  if(editIdx >= 0 && editIdx < menu.length) {
+    menu[editIdx] = { name, unit, rate };
+    document.getElementById('editingItemIndex').value = "-1";
+    document.getElementById('saveItemBtn').textContent = "+ Add Item";
+  } else {
+    const existingIdx = menu.findIndex(x => x.name.toLowerCase() === name.toLowerCase());
+    if (existingIdx >= 0) {
+      menu[existingIdx].rate = rate;
+      menu[existingIdx].unit = unit;
+    } else {
+      menu.push({ name, unit, rate });
+    }
+  }
+
+  localStorage.setItem('shreeRamMenu', JSON.stringify(menu));
+  nameInput.value = '';
+  rateInput.value = '';
+  renderItemManageList();
+}
+
+function deleteMenuItem(index) {
+  if (confirm('Delete this item from menu?')) {
+    menu.splice(index, 1);
+    localStorage.setItem('shreeRamMenu', JSON.stringify(menu));
+    renderItemManageList();
+  }
+}
+
+function editMenuItem(index) {
+  const item = menu[index];
+  document.getElementById('newItemName').value = item.name;
+  document.getElementById('newItemUnit').value = item.unit || 'PKT';
+  document.getElementById('newItemRate').value = item.rate;
+  document.getElementById('editingItemIndex').value = index;
+  document.getElementById('saveItemBtn').textContent = "Update Item";
+}
+
+function showReports() {
+  document.getElementById('billing').classList.add('hidden');
+  document.getElementById('reports').classList.remove('hidden');
+  renderReports();
+}
+
+function hideReports() {
+  document.getElementById('reports').classList.add('hidden');
+  document.getElementById('billing').classList.remove('hidden');
+}
+
+function renderReports() {
+  let totalSales = 0, cash = 0, upi = 0, card = 0;
+  const tbody = document.getElementById('reportRows');
+  tbody.innerHTML = '';
+
+  settledBills.forEach((b) => {
+    totalSales += b.finalTotal;
+    if (b.payment === 'Cash') cash += b.finalTotal;
+    if (b.payment === 'UPI') upi += b.finalTotal;
+    if (b.payment === 'Card') card += b.finalTotal;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${b.billNo}</td>
+      <td>${escapeHtml(b.guest || 'Cash Customer')}</td>
+      <td>${escapeHtml(b.mobile || '-')}</td>
+      <td>${b.payment}</td>
+      <td>₹ ${b.finalTotal.toFixed(2)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('rBills').textContent = settledBills.length;
+  document.getElementById('rSales').textContent = totalSales.toFixed(2);
+  document.getElementById('rCash').textContent = cash.toFixed(2);
+  document.getElementById('rUpi').textContent = upi.toFixed(2);
+  document.getElementById('rCard').textContent = card.toFixed(2);
+}
+
+function resetAllData() {
+  if (confirm('Are you sure you want to reset all demo data and bill history?')) {
+    localStorage.removeItem('shreeRamSettledBills');
+    settledBills = [];
+    initNewBill();
+    alert('System data reset successfully!');
+  }
+}
+</script>
+</body>
+</html>
